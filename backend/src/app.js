@@ -24,7 +24,7 @@ const reportRoutes = require('./routes/report.routes');
 const app = express();
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : '*',
+  origin: process.env.CORS_ORIGIN || true,
   credentials: true,
 }));
 
