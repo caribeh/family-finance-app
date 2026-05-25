@@ -1,6 +1,7 @@
 const { body } = require('express-validator');
 const CreditCard = require('../models/CreditCard');
 const CreditCardExpense = require('../models/CreditCardExpense');
+const DailyControl = require('../models/DailyControl');
 const validate = require('../middleware/validate');
 
 const creditCardController = {
@@ -93,6 +94,36 @@ const creditCardController = {
       });
 
       await CreditCard.updateAvailableLimit(req.params.id, totalAmount);
+
+      const purchaseDay = new Date(purchaseDate).getDate();
+      const purchaseMonth = new Date(purchaseDate).getMonth();
+      const purchaseYear = new Date(purchaseDate).getFullYear();
+      let firstInstallmentDate;
+      if (purchaseDay <= card.closing_day) {
+        firstInstallmentDate = new Date(purchaseYear, purchaseMonth, card.due_day);
+      } else {
+        firstInstallmentDate = new Date(purchaseYear, purchaseMonth + 1, card.due_day);
+      }
+
+      for (let i = 0; i < totalInstallments; i++) {
+        const installmentDate = new Date(firstInstallmentDate.getFullYear(), firstInstallmentDate.getMonth() + i, card.due_day);
+        const descriptionLabel = totalInstallments > 1 ? `${description} (${i + 1}/${totalInstallments})` : description;
+        await DailyControl.create({
+          workspaceId: req.workspaceId,
+          memberId: null,
+          type: 'debit',
+          description: descriptionLabel,
+          amount: installmentAmount,
+          date: installmentDate.toISOString().split('T')[0],
+          paymentMethod: 'credit_card',
+          bankAccountId: null,
+          creditCardId: req.params.id,
+          mealVoucherId: null,
+          benefitCardId: null,
+          category: null,
+          source: 'credit_card_expense',
+        });
+      }
 
       const updatedCard = await CreditCard.findById(req.params.id);
 

@@ -241,7 +241,7 @@ function DailyControlPage() {
           { key: 'description', label: 'Descricao' },
           { key: 'amount', label: 'Valor', format: 'currency' },
           { key: 'payment_method', label: 'Forma', render: (val) => {
-            const labels = { cash: 'Dinheiro', credit_card: 'Credito', meal_voucher: 'VA', bank_transfer: 'Transf.', pix: 'PIX', benefit_card: 'Beneficio' };
+            const labels = { credit_card: 'Credito', pix: 'PIX', benefit_card: 'Beneficio' };
             return labels[val] || '-';
           }},
           { key: 'category', label: 'Categoria' },
@@ -333,12 +333,10 @@ function DailyControlPage() {
           </div>
           <div className="form-group">
             <label htmlFor="debit_payment_method">Forma de Pagamento</label>
-            <select id="debit_payment_method" name="payment_method" value={debitFormData.payment_method || 'cash'} onChange={handleDebitChange} required>
-              <option value="cash">Dinheiro</option>
+            <select id="debit_payment_method" name="payment_method" value={debitFormData.payment_method || 'pix'} onChange={handleDebitChange} required>
+              <option value="pix">PIX</option>
               <option value="credit_card">Cartao de Credito</option>
               <option value="benefit_card">Cartao de Beneficio</option>
-              <option value="pix">PIX</option>
-              <option value="bank_transfer">Transferencia</option>
             </select>
           </div>
 
@@ -372,7 +370,7 @@ function DailyControlPage() {
             </div>
           )}
 
-          {(debitFormData.payment_method === 'pix' || debitFormData.payment_method === 'bank_transfer') && (
+          {debitFormData.payment_method === 'pix' && (
             <div className="form-group">
               <label htmlFor="debit_bank_account_id">Conta de Origem (opcional)</label>
               <select id="debit_bank_account_id" name="bank_account_id" value={debitFormData.bank_account_id || ''} onChange={handleDebitChange}>

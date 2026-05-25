@@ -180,7 +180,7 @@ CREATE TABLE daily_control (
     description VARCHAR(100) NOT NULL,
     amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
     date DATE NOT NULL,
-    payment_method VARCHAR(20) CHECK (payment_method IN ('cash', 'credit_card', 'meal_voucher', 'bank_transfer', 'pix', 'benefit_card')),
+    payment_method VARCHAR(20) CHECK (payment_method IN ('credit_card', 'benefit_card', 'pix')),
     bank_account_id UUID REFERENCES bank_accounts(id) ON DELETE SET NULL,
     credit_card_id UUID REFERENCES credit_cards(id) ON DELETE SET NULL,
     meal_voucher_id UUID REFERENCES meal_vouchers(id) ON DELETE SET NULL,

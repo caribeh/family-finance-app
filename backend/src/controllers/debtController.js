@@ -74,7 +74,7 @@ const debtController = {
           description: `Pagamento ${existing.type === 'loan' ? 'emprestimo' : 'divida'} ${existing.creditor_debtor} (${debt.paid_installments}/${debt.total_installments})`,
           amount: paymentAmount,
           date: today,
-          paymentMethod: bankAccountId ? 'bank_transfer' : 'cash',
+          paymentMethod: 'pix',
           bankAccountId: bankAccountId || null,
           creditCardId: null,
           mealVoucherId: null,

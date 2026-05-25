@@ -30,7 +30,7 @@ const dailyControlController = {
     body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be positive'),
     body('date').isISO8601().withMessage('Date must be valid'),
     body('category').optional().trim(),
-    body('payment_method').optional().isIn(['cash', 'credit_card', 'meal_voucher', 'bank_transfer', 'pix', 'benefit_card']),
+    body('payment_method').optional().isIn(['credit_card', 'benefit_card', 'pix']),
     body('bank_account_id').optional({ nullable: true }).isUUID(),
     body('credit_card_id').optional({ nullable: true }).isUUID(),
     body('meal_voucher_id').optional({ nullable: true }).isUUID(),
@@ -164,10 +164,8 @@ const dailyControlController = {
           });
         }
 
-        if (paymentMethod === 'bank_transfer' || paymentMethod === 'pix') {
-          if (bankAccountId) {
-            await BankAccount.updateBalance(bankAccountId, -amount);
-          }
+        if (paymentMethod === 'pix' && bankAccountId) {
+          await BankAccount.updateBalance(bankAccountId, -amount);
         }
       }
 
@@ -230,7 +228,7 @@ const dailyControlController = {
       if (existing.payment_method === 'benefit_card' && existing.benefit_card_id) {
         await BenefitCard.updateBalance(existing.benefit_card_id, parseFloat(existing.amount));
       }
-      if ((existing.payment_method === 'bank_transfer' || existing.payment_method === 'pix') && existing.bank_account_id) {
+      if (existing.payment_method === 'pix' && existing.bank_account_id) {
         await BankAccount.updateBalance(existing.bank_account_id, parseFloat(existing.amount));
       }
     }
