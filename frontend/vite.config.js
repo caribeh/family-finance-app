@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://backend:3001',
+        target: 'http://family-finance-api:3001',
         changeOrigin: true,
       },
     },
