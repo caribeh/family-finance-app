@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 env:
+  DB_IMAGE: ${{ secrets.DOCKER_USERNAME }}/family-finance-db
   BACKEND_IMAGE: ${{ secrets.DOCKER_USERNAME }}/family-finance-backend
   FRONTEND_IMAGE: ${{ secrets.DOCKER_USERNAME }}/family-finance-frontend
 
@@ -25,6 +26,18 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Database
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.db
+          push: true
+          tags: |
+            ${{ env.DB_IMAGE }}:latest
+            ${{ env.DB_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build and push Backend
         uses: docker/build-push-action@v5

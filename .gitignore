@@ -18,3 +18,8 @@ Thumbs.db
 *.swo
 
 backend/src/debug.js
+
+# Deployment compose files (contain environment-specific secrets)
+docker-compose.db.yml
+docker-compose.backend.yml
+docker-compose.frontend.yml

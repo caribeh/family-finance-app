@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    image: caribeh/family-finance-backend:latest
+    container_name: family-finance-api
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/family_finance
+      JWT_SECRET: seu-jwt-secret-aqui
+      JWT_EXPIRES_IN: 24h
+      PORT: 3001
+    networks:
+      - family-finance-network
+
+networks:
+  family-finance-network:
+    name: family-finance-network
+    driver: bridge
+    external: true
