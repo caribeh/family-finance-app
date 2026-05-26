@@ -1,5 +1,17 @@
 const { pool } = require('../config/database');
 
+function getFirstInstallmentDate(purchaseDate, closingDay, dueDay) {
+  const pDate = new Date(purchaseDate);
+  const purchaseDay = pDate.getDate();
+  let firstDate;
+  if (purchaseDay <= closingDay) {
+    firstDate = new Date(pDate.getFullYear(), pDate.getMonth(), dueDay);
+  } else {
+    firstDate = new Date(pDate.getFullYear(), pDate.getMonth() + 1, dueDay);
+  }
+  return firstDate;
+}
+
 const CreditCardExpense = {
   async create({ creditCardId, workspaceId, description, totalAmount, installmentAmount, totalInstallments, establishment, purchaseDate }) {
     const result = await pool.query(
@@ -25,6 +37,29 @@ const CreditCardExpense = {
       [workspaceId, monthStart, monthEnd]
     );
     return result.rows;
+  },
+
+  async findActiveByMonth(workspaceId, month, year) {
+    const allExpenses = await pool.query(
+      'SELECT cce.*, cc.closing_day, cc.due_day FROM credit_card_expenses cce JOIN credit_cards cc ON cce.credit_card_id = cc.id WHERE cce.workspace_id = $1',
+      [workspaceId]
+    );
+    return allExpenses.rows.filter((exp) => {
+      if (exp.total_installments <= 1) {
+        const pDate = new Date(exp.purchase_date);
+        return pDate.getFullYear() === year && pDate.getMonth() + 1 === month;
+      }
+      const firstDate = getFirstInstallmentDate(exp.purchase_date, exp.closing_day, exp.due_day);
+      const firstYear = firstDate.getFullYear();
+      const firstMonth = firstDate.getMonth() + 1;
+      const lastMonth = firstMonth + exp.total_installments - 1;
+      const lastYear = firstYear + Math.floor((lastMonth - 1) / 12);
+      const normalizedLastMonth = ((lastMonth - 1) % 12) + 1;
+      const targetMonthNum = firstYear * 12 + firstMonth;
+      const lastMonthNum = lastYear * 12 + normalizedLastMonth;
+      const givenMonthNum = year * 12 + month;
+      return givenMonthNum >= targetMonthNum && givenMonthNum <= lastMonthNum;
+    });
   },
 
   async findById(id) {
