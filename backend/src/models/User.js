@@ -22,7 +22,7 @@ const User = {
     return result.rows[0];
   },
 
-  async update(id, { name, email, passwordHash }) {
+  async update(id, { name, email, passwordHash, theme }) {
     const fields = [];
     const values = [];
     let idx = 1;
@@ -39,12 +39,16 @@ const User = {
       fields.push(`password_hash = $${idx++}`);
       values.push(passwordHash);
     }
+    if (theme !== undefined) {
+      fields.push(`theme = $${idx++}`);
+      values.push(theme);
+    }
 
     if (fields.length === 0) return this.findById(id);
 
     values.push(id);
     const result = await pool.query(
-      `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
+      `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`,
       values
     );
     return result.rows[0];

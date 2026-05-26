@@ -33,6 +33,7 @@ const authController = {
         name: user.name,
         email: user.email,
         workspace_id: workspace.id,
+        theme: user.theme,
         token,
       });
     },
@@ -67,6 +68,7 @@ const authController = {
         name: user.name,
         email: user.email,
         workspace_id: workspace.id,
+        theme: user.theme,
         token,
       });
     },

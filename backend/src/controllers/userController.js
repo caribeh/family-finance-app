@@ -12,19 +12,22 @@ const userController = {
       id: user.id,
       name: user.name,
       email: user.email,
+      theme: user.theme,
     });
   },
 
   updateMe: [
     body('name').optional().trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
+    body('theme').optional().isIn(['light', 'dark']).withMessage('Theme must be light or dark'),
     validate,
     async (req, res) => {
-      const { name } = req.body;
-      const user = await User.update(req.userId, { name });
+      const { name, theme } = req.body;
+      const user = await User.update(req.userId, { name, theme });
       res.json({
         id: user.id,
         name: user.name,
         email: user.email,
+        theme: user.theme,
       });
     },
   ],

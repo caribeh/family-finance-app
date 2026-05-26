@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { MonthProvider } from './context/MonthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './components/Toast';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -22,6 +23,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <MonthProvider>
+          <ThemeProvider>
           <ToastProvider>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
@@ -128,6 +130,7 @@ function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </ToastProvider>
+          </ThemeProvider>
         </MonthProvider>
       </AuthProvider>
     </BrowserRouter>
