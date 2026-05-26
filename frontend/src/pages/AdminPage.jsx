@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminApi, userApi } from '../api';
+import { adminApi, userApi, dataApi } from '../api';
 import { useToast } from '../components/Toast';
 import TransactionForm from '../components/TransactionForm';
 import ExpenseTable from '../components/ExpenseTable';
@@ -16,6 +16,8 @@ function AdminPage() {
   const [budgetMember, setBudgetMember] = useState(null);
   const [budgetValue, setBudgetValue] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadMembers();
@@ -88,6 +90,43 @@ function AdminPage() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const res = await dataApi.exportData();
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `family-finance-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast('Dados exportados com sucesso!');
+    } catch (err) {
+      addToast('Erro ao exportar dados', 'error');
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setImporting(true);
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await dataApi.importData(data);
+      addToast('Dados importados com sucesso!');
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Erro ao importar dados', 'error');
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="admin-page">
       <div className="section-header">
@@ -141,6 +180,27 @@ function AdminPage() {
           </div>
         </div>
       </Modal>
+
+      <div className="admin-section">
+        <hr />
+        <h2>Exportar / Importar Dados</h2>
+        <p className="text-muted">Exporta ou importa todos os dados da sua conta (contas, cartoes, despesas, receitas, etc.) em formato JSON.</p>
+        <div className="form-actions" style={{ justifyContent: 'flex-start', marginTop: '0.75rem' }}>
+          <button className="btn-primary" onClick={handleExport}>
+            Exportar Dados
+          </button>
+          <button className="btn-secondary" onClick={handleImportClick} disabled={importing}>
+            {importing ? 'Importando...' : 'Importar Dados'}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={handleImportFile}
+          />
+        </div>
+      </div>
 
       <div className="admin-footer">
         <hr />

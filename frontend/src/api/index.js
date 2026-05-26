@@ -107,3 +107,8 @@ export const reportsApi = {
   getDashboard: (month, year) => api.get('/reports/dashboard', { params: { month, year } }),
   getMonthlyReport: (month, year) => api.get('/reports/monthly', { params: { month, year } }),
 };
+
+export const dataApi = {
+  exportData: () => api.get('/data/export'),
+  importData: (data) => api.post('/data/import', data),
+};

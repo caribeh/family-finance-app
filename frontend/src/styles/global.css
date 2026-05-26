@@ -215,9 +215,14 @@ body {
   font-weight: 500;
 }
 
+.admin-section,
 .admin-footer {
   margin-top: 3rem;
   padding-top: 1rem;
+}
+
+.admin-section h2 {
+  margin-bottom: 0.5rem;
 }
 
 .delete-account-confirm p {

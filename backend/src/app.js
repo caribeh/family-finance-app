@@ -20,6 +20,7 @@ const investmentRoutes = require('./routes/investment.routes');
 const subscriptionRoutes = require('./routes/subscription.routes');
 const benefitCardRoutes = require('./routes/benefitCard.routes');
 const reportRoutes = require('./routes/report.routes');
+const dataRoutes = require('./routes/data.routes');
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -46,6 +47,7 @@ app.use('/api/investments', investmentRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/benefit-cards', benefitCardRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/data', dataRoutes);
 
 app.use(errorHandler);
 
