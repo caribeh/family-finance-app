@@ -2,6 +2,7 @@ const FixedIncome = require('../models/FixedIncome');
 const FixedExpense = require('../models/FixedExpense');
 const DailyExpense = require('../models/DailyExpense');
 const DailyControl = require('../models/DailyControl');
+const CreditCard = require('../models/CreditCard');
 const CreditCardExpense = require('../models/CreditCardExpense');
 const MealVoucherExpense = require('../models/MealVoucherExpense');
 const MealVoucher = require('../models/MealVoucher');
@@ -148,6 +149,7 @@ const reportController = {
     const bankAccounts = await BankAccount.findByWorkspaceId(req.workspaceId);
     const cancelledSubscriptions = await Subscription.getCancelledThisMonth(req.workspaceId, m, y);
     const benefitCards = await BenefitCard.findByWorkspaceId(req.workspaceId);
+    const creditCards = await CreditCard.findByWorkspaceId(req.workspaceId);
 
     const report = await generateMonthlyReport({
       fixedIncomes,
@@ -159,6 +161,7 @@ const reportController = {
       debts,
       investments,
       bankAccounts,
+      creditCards,
       month: m,
       year: y,
       workspaceId: req.workspaceId,

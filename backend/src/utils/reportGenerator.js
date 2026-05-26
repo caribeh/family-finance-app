@@ -11,6 +11,7 @@ async function generateMonthlyReport({
   debts,
   investments,
   bankAccounts,
+  creditCards,
   month,
   year,
   workspaceId,
@@ -53,6 +54,22 @@ async function generateMonthlyReport({
     })
     .reduce((sum, e) => sum + parseFloat(e.amount), 0);
 
+  const cardTotals = {};
+  for (const entry of allCCDebits) {
+    const cardId = entry.credit_card_id;
+    if (!cardId) continue;
+    if (!cardTotals[cardId]) {
+      cardTotals[cardId] = 0;
+    }
+    cardTotals[cardId] += parseFloat(entry.amount);
+  }
+
+  const creditCardsBreakdown = (creditCards || []).map((card) => ({
+    id: card.id,
+    name: card.name,
+    total: cardTotals[card.id] || 0,
+  }));
+
   const debtPaymentsThisMonth = workspaceId ? await DebtPayment.getTotalByMonth(workspaceId, month, year) : 0;
 
   const benefitCreditsThisMonth = (dailyControlEntries || [])
@@ -90,6 +107,7 @@ async function generateMonthlyReport({
       total_expenses: totalDailyExpenses,
       total_credit_card: totalCCThisMonth,
       total_credit_card_installments: parceladosCCThisMonth,
+      credit_cards_breakdown: creditCardsBreakdown,
       total_debt_payments: debtPaymentsThisMonth,
       total_investments: totalInvestments,
       total_meal_voucher_expenses: totalMealVoucherExpenses,

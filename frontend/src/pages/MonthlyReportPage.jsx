@@ -38,8 +38,10 @@ function MonthlyReportPage() {
       <div className="summary-grid">
         <SummaryCard title="Receitas" value={summary.total_income} icon="💵" variant="success" />
         <SummaryCard title="Gastos Totais" value={summary.total_expenses} icon="💰" variant="danger" />
-        <SummaryCard title="Parcelados Cartao" value={summary.total_credit_card_installments} icon="💳" variant="warning" />
-        <SummaryCard title="Total Cartao" value={summary.total_credit_card} icon="💳" variant="warning" />
+        {summary.credit_cards_breakdown && summary.credit_cards_breakdown.length > 0 && summary.credit_cards_breakdown.map((card) => (
+          <SummaryCard key={card.id} title={`Cartao ${card.name}`} value={card.total} icon="💳" variant="warning" />
+        ))}
+        <SummaryCard title="Total Cartoes" value={summary.total_credit_card} icon="💳" variant="warning" />
         <SummaryCard title="Pagamento Dividas" value={summary.total_debt_payments} icon="📑" variant="warning" />
         <SummaryCard title="Investimentos" value={summary.total_investments} icon="📈" variant="info" />
       </div>
@@ -55,8 +57,14 @@ function MonthlyReportPage() {
             <span>Gastos Totais</span>
             <span className="negative">- {formatCurrency(summary.total_expenses)}</span>
           </div>
+          {summary.credit_cards_breakdown && summary.credit_cards_breakdown.length > 0 && summary.credit_cards_breakdown.map((card) => (
+            <div className="report-line" key={card.id}>
+              <span>Cartao {card.name}</span>
+              <span className="negative">- {formatCurrency(card.total)}</span>
+            </div>
+          ))}
           <div className="report-line">
-            <span>Total Cartao</span>
+            <span>Total Cartoes</span>
             <span className="negative">- {formatCurrency(summary.total_credit_card)}</span>
           </div>
           <div className="report-line">
