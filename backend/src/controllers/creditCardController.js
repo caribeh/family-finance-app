@@ -7,7 +7,11 @@ const validate = require('../middleware/validate');
 const creditCardController = {
   getAll: async (req, res) => {
     const cards = await CreditCard.findByWorkspaceId(req.workspaceId);
-    res.json(cards.map((c) => ({
+    for (const card of cards) {
+      await CreditCard.advanceInstallments(card.id);
+    }
+    const updatedCards = await CreditCard.findByWorkspaceId(req.workspaceId);
+    res.json(updatedCards.map((c) => ({
       ...c,
       credit_limit: parseFloat(c.credit_limit),
       available_limit: parseFloat(c.available_limit),
@@ -44,13 +48,15 @@ const creditCardController = {
     if (!card || card.workspace_id !== req.workspaceId) {
       return res.status(404).json({ error: 'Credit card not found' });
     }
+    const released = await CreditCard.advanceInstallments(req.params.id);
+    const updatedCard = await CreditCard.findById(req.params.id);
     const expenses = await CreditCardExpense.findByCardId(req.params.id);
     const totalCurrent = expenses.reduce((sum, exp) => sum + parseFloat(exp.total_amount), 0);
     res.json({
       card: {
-        ...card,
-        credit_limit: parseFloat(card.credit_limit),
-        available_limit: parseFloat(card.available_limit),
+        ...updatedCard,
+        credit_limit: parseFloat(updatedCard.credit_limit),
+        available_limit: parseFloat(updatedCard.available_limit),
       },
       expenses: expenses.map((e) => ({
         ...e,
@@ -58,7 +64,7 @@ const creditCardController = {
         installment_amount: parseFloat(e.installment_amount),
       })),
       total_current: totalCurrent,
-      available_limit: parseFloat(card.available_limit),
+      available_limit: parseFloat(updatedCard.available_limit),
     });
   },
 
@@ -125,6 +131,7 @@ const creditCardController = {
         });
       }
 
+      await CreditCard.advanceInstallments(req.params.id);
       const updatedCard = await CreditCard.findById(req.params.id);
 
       res.status(201).json({
