@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { adminApi } from '../api';
+import { useNavigate } from 'react-router-dom';
+import { adminApi, userApi } from '../api';
 import { useToast } from '../components/Toast';
 import TransactionForm from '../components/TransactionForm';
 import ExpenseTable from '../components/ExpenseTable';
 import Modal from '../components/Modal';
 
 function AdminPage() {
+  const navigate = useNavigate();
   const { addToast } = useToast();
   const [members, setMembers] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -13,6 +15,7 @@ function AdminPage() {
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [budgetMember, setBudgetMember] = useState(null);
   const [budgetValue, setBudgetValue] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     loadMembers();
@@ -74,6 +77,17 @@ function AdminPage() {
     { name: 'display_role', label: 'Funcao na Familia', type: 'text', required: true, defaultValue: 'Membro' },
   ];
 
+  const handleDeleteAccount = async () => {
+    try {
+      await userApi.deleteMe();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Erro ao deletar conta', 'error');
+    }
+  };
+
   return (
     <div className="admin-page">
       <div className="section-header">
@@ -124,6 +138,26 @@ function AdminPage() {
           <div className="form-actions">
             <button className="btn-secondary" onClick={() => { setShowBudgetModal(false); setBudgetMember(null); }}>Cancelar</button>
             <button className="btn-primary" onClick={handleSetBudget}>Salvar</button>
+          </div>
+        </div>
+      </Modal>
+
+      <div className="admin-footer">
+        <hr />
+        <h2>Zona de Perigo</h2>
+        <p className="text-muted">Apagar todos os dados da sua conta, incluindo membros, transacoes e configuracoes.</p>
+        <button className="btn-danger" onClick={() => setShowDeleteModal(true)}>
+          Deletar Minha Conta
+        </button>
+      </div>
+
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Deletar Conta">
+        <div className="delete-account-confirm">
+          <p>Tem certeza que deseja deletar sua conta?</p>
+          <p className="text-danger">Todos os dados serao permanentemente removidos. Esta acao nao pode ser desfeita.</p>
+          <div className="form-actions">
+            <button className="btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
+            <button className="btn-danger" onClick={handleDeleteAccount}>Deletar Minha Conta</button>
           </div>
         </div>
       </Modal>

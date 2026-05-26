@@ -5,5 +5,6 @@ const userController = require('../controllers/userController');
 
 router.get('/me', authMiddleware, userController.getMe);
 router.put('/me', authMiddleware, userController.updateMe);
+router.delete('/me', authMiddleware, userController.deleteMe);
 
 module.exports = router;

@@ -8,6 +8,7 @@ export const authApi = {
 export const userApi = {
   getMe: () => api.get('/users/me'),
   updateMe: (data) => api.put('/users/me', data),
+  deleteMe: () => api.delete('/users/me'),
 };
 
 export const adminApi = {

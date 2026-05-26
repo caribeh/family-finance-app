@@ -28,6 +28,11 @@ const userController = {
       });
     },
   ],
+
+  deleteMe: async (req, res) => {
+    await User.delete(req.userId);
+    res.status(200).json({ message: 'Account deleted successfully' });
+  },
 };
 
 module.exports = userController;
