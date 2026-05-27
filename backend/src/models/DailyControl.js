@@ -58,7 +58,7 @@ const DailyControl = {
        WHERE member_id = $1
          AND type = 'debit'
          AND payment_method NOT IN ('meal_voucher', 'credit_card', 'benefit_card')
-         AND category NOT IN ('Divida', 'Emprestimo', 'Contas')
+         AND category NOT IN ('Divida', 'Emprestimo', 'Contas', 'Investimento')
          AND date >= $2
          AND date <= $3`,
       [memberId, monthStart, monthEnd]
