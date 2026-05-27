@@ -103,6 +103,16 @@ export const benefitCardsApi = {
   delete: (id) => api.delete(`/benefit-cards/${id}`),
 };
 
+export const billRemindersApi = {
+  getAll: () => api.get('/bill-reminders'),
+  create: (data) => api.post('/bill-reminders', data),
+  update: (id, data) => api.put(`/bill-reminders/${id}`, data),
+  delete: (id) => api.delete(`/bill-reminders/${id}`),
+  getConfig: () => api.get('/bill-reminders/config'),
+  saveConfig: (data) => api.put('/bill-reminders/config', data),
+  testNotification: () => api.post('/bill-reminders/test'),
+};
+
 export const reportsApi = {
   getDashboard: (month, year) => api.get('/reports/dashboard', { params: { month, year } }),
   getMonthlyReport: (month, year) => api.get('/reports/monthly', { params: { month, year } }),

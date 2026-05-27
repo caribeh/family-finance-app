@@ -16,6 +16,7 @@ import InvestmentsPage from './pages/InvestmentsPage';
 import SubscriptionsPage from './pages/SubscriptionsPage';
 import BenefitCardsPage from './pages/BenefitCardsPage';
 import MonthlyReportPage from './pages/MonthlyReportPage';
+import BillRemindersPage from './pages/BillRemindersPage';
 import AdminPage from './pages/AdminPage';
 
 function App() {
@@ -113,6 +114,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <MonthlyReportPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bill-reminders"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <BillRemindersPage />
                     </Layout>
                   </ProtectedRoute>
                 }

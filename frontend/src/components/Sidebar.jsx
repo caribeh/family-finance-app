@@ -11,6 +11,7 @@ const menuItems = [
   { path: '/investments', label: 'Investimentos', icon: '📈' },
   { path: '/subscriptions', label: 'Assinaturas', icon: '🔄' },
   { path: '/monthly-report', label: 'Relatorio Mensal', icon: '📄' },
+  { path: '/bill-reminders', label: 'Lembretes', icon: '🔔' },
 ];
 
 const adminMenuItem = { path: '/admin', label: 'Administracao', icon: '⚙️' };
