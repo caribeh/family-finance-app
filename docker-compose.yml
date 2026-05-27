@@ -5,6 +5,7 @@ services:
     image: postgres:16-alpine
     container_name: family-finance-db
     environment:
+      TZ: America/Sao_Paulo
       POSTGRES_DB: family_finance
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -29,17 +30,18 @@ services:
     ports:
       - "3001:3001"
     environment:
+      TZ: America/Sao_Paulo
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/family_finance
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       JWT_EXPIRES_IN: 24h
       PORT: 3001
       NOTIFICATION_TIME: '10:00'
-      EMAIL_HOST: 'smtp.gmail.com'
+      EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT:-587}
-      EMAIL_USER: 'bcaribe34@gmail.com'
-      EMAIL_PASS: 'btqz iwkh ifvf ucdb'
-      EMAIL_FROM: 'financeiro@caribe.house'
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM: ${EMAIL_FROM}
 
     volumes:
       - ./backend/src:/app/src
@@ -58,6 +60,7 @@ services:
     ports:
       - "5173:5173"
     environment:
+      TZ: America/Sao_Paulo
       VITE_API_URL: http://localhost:3001/api
     volumes:
       - ./frontend/src:/app/src
