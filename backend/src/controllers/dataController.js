@@ -11,8 +11,8 @@ const UUID_COLS = new Set([
 const TABLES_IN_ORDER = [
   'members',
   'meal_vouchers',
-  'investments',
   'bank_accounts',
+  'investments',
   'credit_cards',
   'benefit_cards',
   'fixed_incomes',
@@ -29,7 +29,7 @@ const TABLES_IN_ORDER = [
 const FK_REMAP = {
   members: {},
   meal_vouchers: {},
-  investments: {},
+  investments: { bank_account_id: 'bank_accounts' },
   bank_accounts: { member_id: 'members' },
   credit_cards: { member_id: 'members' },
   benefit_cards: { member_id: 'members' },

@@ -80,12 +80,14 @@ export const bankAccountsApi = {
   create: (data) => api.post('/bank-accounts', data),
   update: (id, data) => api.put(`/bank-accounts/${id}`, data),
   delete: (id) => api.delete(`/bank-accounts/${id}`),
+  transfer: (data) => api.post('/transfers', data),
 };
 
 export const investmentsApi = {
   getAll: () => api.get('/investments'),
   create: (data) => api.post('/investments', data),
   redeem: (id, data) => api.post(`/investments/${id}/redeem`, data),
+  apply: (id, data) => api.post(`/investments/${id}/apply`, data),
   update: (id, data) => api.put(`/investments/${id}`, data),
   delete: (id) => api.delete(`/investments/${id}`),
 };

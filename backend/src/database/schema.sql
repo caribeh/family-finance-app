@@ -181,7 +181,7 @@ CREATE TABLE daily_control (
     description VARCHAR(100) NOT NULL,
     amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
     date DATE NOT NULL,
-    payment_method VARCHAR(20) CHECK (payment_method IN ('credit_card', 'benefit_card', 'pix')),
+    payment_method VARCHAR(20) CHECK (payment_method IN ('credit_card', 'benefit_card', 'pix', 'transfer')),
     bank_account_id UUID REFERENCES bank_accounts(id) ON DELETE SET NULL,
     credit_card_id UUID REFERENCES credit_cards(id) ON DELETE SET NULL,
     meal_voucher_id UUID REFERENCES meal_vouchers(id) ON DELETE SET NULL,
@@ -202,6 +202,7 @@ CREATE TABLE investments (
     current_value DECIMAL(10,2) NOT NULL DEFAULT 0,
     application_date DATE NOT NULL,
     status VARCHAR(10) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+    bank_account_id UUID REFERENCES bank_accounts(id) ON DELETE SET NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -22,6 +22,7 @@ const benefitCardRoutes = require('./routes/benefitCard.routes');
 const reportRoutes = require('./routes/report.routes');
 const dataRoutes = require('./routes/data.routes');
 const billReminderRoutes = require('./routes/billReminder.routes');
+const transferRoutes = require('./routes/transfer.routes');
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/benefit-cards', benefitCardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/bill-reminders', billReminderRoutes);
+app.use('/api/transfers', transferRoutes);
 
 app.use(errorHandler);
 

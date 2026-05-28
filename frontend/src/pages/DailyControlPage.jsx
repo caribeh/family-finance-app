@@ -144,11 +144,12 @@ function DailyControlPage() {
 
   const today = getLocalToday();
 
-  const standardCredits = entries.filter((e) => e.type === 'credit' && e.payment_method !== 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
-  const standardDebitsExclCC = entries.filter((e) => e.type === 'debit' && e.payment_method !== 'credit_card' && e.payment_method !== 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
-  const standardDebitsCC = entries.filter((e) => e.type === 'debit' && e.payment_method === 'credit_card').reduce((sum, e) => sum + e.amount, 0);
-  const benefitCredits = entries.filter((e) => e.type === 'credit' && e.payment_method === 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
-  const benefitDebits = entries.filter((e) => e.type === 'debit' && e.payment_method === 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
+  const isUserEntry = (e) => e.source !== 'transfer' && e.source !== 'investment';
+  const standardCredits = entries.filter((e) => isUserEntry(e) && e.type === 'credit' && e.payment_method !== 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
+  const standardDebitsExclCC = entries.filter((e) => isUserEntry(e) && e.type === 'debit' && e.payment_method !== 'credit_card' && e.payment_method !== 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
+  const standardDebitsCC = entries.filter((e) => isUserEntry(e) && e.type === 'debit' && e.payment_method === 'credit_card').reduce((sum, e) => sum + e.amount, 0);
+  const benefitCredits = entries.filter((e) => isUserEntry(e) && e.type === 'credit' && e.payment_method === 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
+  const benefitDebits = entries.filter((e) => isUserEntry(e) && e.type === 'debit' && e.payment_method === 'benefit_card').reduce((sum, e) => sum + e.amount, 0);
 
   const getMemberName = (userId) => {
     const member = members.find((m) => m.id === userId);
@@ -241,7 +242,7 @@ function DailyControlPage() {
           { key: 'description', label: 'Descricao' },
           { key: 'amount', label: 'Valor', format: 'currency' },
           { key: 'payment_method', label: 'Forma', render: (val) => {
-            const labels = { credit_card: 'Credito', pix: 'PIX', benefit_card: 'Beneficio' };
+            const labels = { credit_card: 'Credito', pix: 'PIX', benefit_card: 'Beneficio', transfer: 'Transferencia' };
             return labels[val] || '-';
           }},
           { key: 'category', label: 'Categoria' },

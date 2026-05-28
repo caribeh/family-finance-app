@@ -58,13 +58,13 @@ const reportController = {
     const mealVouchers = await MealVoucher.findByWorkspaceId(req.workspaceId);
     const benefitCards = await BenefitCard.findByWorkspaceId(req.workspaceId);
 
-    const standardCredits = dailyControlEntries.filter((e) => e.type === 'credit' && e.payment_method !== 'benefit_card').reduce((sum, e) => sum + parseFloat(e.amount), 0);
+    const standardCredits = dailyControlEntries.filter((e) => e.type === 'credit' && e.payment_method !== 'benefit_card' && e.source !== 'transfer' && e.source !== 'investment').reduce((sum, e) => sum + parseFloat(e.amount), 0);
     const totalIncome = fixedIncomes.reduce((sum, inc) => sum + parseFloat(inc.amount), 0) + standardCredits;
     const totalFixedExpenses = fixedExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
     const paidFixedExpenses = fixedExpenses.filter((e) => e.is_paid).reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
     const pendingFixedExpenses = totalFixedExpenses - paidFixedExpenses;
 
-    const standardDebits = dailyControlEntries.filter((e) => e.type === 'debit' && e.payment_method !== 'benefit_card' && e.payment_method !== 'credit_card').reduce((sum, e) => sum + parseFloat(e.amount), 0);
+    const standardDebits = dailyControlEntries.filter((e) => e.type === 'debit' && e.payment_method !== 'benefit_card' && e.payment_method !== 'credit_card' && e.source !== 'transfer' && e.source !== 'investment').reduce((sum, e) => sum + parseFloat(e.amount), 0);
     const totalDailyExpenses = dailyExpenses
       .filter((e) => e.payment_method !== 'meal_voucher')
       .reduce((sum, exp) => sum + parseFloat(exp.amount), 0) + standardDebits;
@@ -102,7 +102,7 @@ const reportController = {
       const cat = exp.category || 'Sem categoria';
       expensesByCategory[cat] = (expensesByCategory[cat] || 0) + parseFloat(exp.amount);
     });
-    dailyControlEntries.filter((e) => e.type === 'debit').forEach((exp) => {
+    dailyControlEntries.filter((e) => e.type === 'debit' && e.source !== 'transfer' && e.source !== 'investment').forEach((exp) => {
       const cat = exp.category || 'Sem categoria';
       expensesByCategory[cat] = (expensesByCategory[cat] || 0) + parseFloat(exp.amount);
     });

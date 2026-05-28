@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { investmentsApi } from '../api';
+import { investmentsApi, bankAccountsApi } from '../api';
 import { useToast } from '../components/Toast';
 import ExpenseTable from '../components/ExpenseTable';
 import Modal from '../components/Modal';
@@ -8,10 +8,12 @@ import SummaryCard from '../components/SummaryCard';
 function InvestmentsPage() {
   const { addToast } = useToast();
   const [investments, setInvestments] = useState([]);
+  const [bankAccounts, setBankAccounts] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
-  const [redeemingInvestment, setRedeemingInvestment] = useState(null);
-  const [redeemAmount, setRedeemAmount] = useState('');
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [selectedInvestment, setSelectedInvestment] = useState(null);
+  const [operationAmount, setOperationAmount] = useState('');
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
@@ -20,8 +22,12 @@ function InvestmentsPage() {
 
   const loadData = async () => {
     try {
-      const invRes = await investmentsApi.getAll();
+      const [invRes, accRes] = await Promise.all([
+        investmentsApi.getAll(),
+        bankAccountsApi.getAll(),
+      ]);
       setInvestments(invRes.data);
+      setBankAccounts(accRes.data);
     } catch (err) {
       addToast('Erro ao carregar dados', 'error');
     }
@@ -46,23 +52,46 @@ function InvestmentsPage() {
   };
 
   const handleOpenRedeem = (investment) => {
-    setRedeemingInvestment(investment);
-    setRedeemAmount(investment.current_value.toString());
+    setSelectedInvestment(investment);
+    setOperationAmount(investment.current_value.toString());
     setShowRedeemModal(true);
   };
 
   const handleRedeem = async () => {
     try {
-      await investmentsApi.redeem(redeemingInvestment.id, {
-        amount: parseFloat(redeemAmount),
+      const res = await investmentsApi.redeem(selectedInvestment.id, {
+        amount: parseFloat(operationAmount),
+        date: new Date().toISOString().split('T')[0],
       });
-      addToast('Resgate realizado!');
+      addToast(res.data.message || 'Resgate realizado!');
       setShowRedeemModal(false);
-      setRedeemingInvestment(null);
-      setRedeemAmount('');
+      setSelectedInvestment(null);
+      setOperationAmount('');
       loadData();
     } catch (err) {
       addToast(err.response?.data?.error || 'Erro ao resgatar', 'error');
+    }
+  };
+
+  const handleOpenApply = (investment) => {
+    setSelectedInvestment(investment);
+    setOperationAmount('');
+    setShowApplyModal(true);
+  };
+
+  const handleApply = async () => {
+    try {
+      await investmentsApi.apply(selectedInvestment.id, {
+        amount: parseFloat(operationAmount),
+        date: new Date().toISOString().split('T')[0],
+      });
+      addToast('Aplicacao realizada!');
+      setShowApplyModal(false);
+      setSelectedInvestment(null);
+      setOperationAmount('');
+      loadData();
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Erro ao aplicar', 'error');
     }
   };
 
@@ -110,11 +139,22 @@ function InvestmentsPage() {
           { key: 'institution', label: 'Instituicao' },
           { key: 'applied_amount', label: 'Aplicado', format: 'currency' },
           { key: 'current_value', label: 'Valor Atual', format: 'currency' },
+          { key: 'bank_name', label: 'Conta', render: (val) => val || '-' },
           { key: 'status', label: 'Status', render: (val) => val === 'active' ? 'Ativo' : 'Fechado' },
+          {
+            key: 'actions', label: 'Acoes', render: (_, row) => (
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {row.status === 'active' && row.bank_account_id && (
+                  <>
+                    <button className="btn-action" onClick={() => handleOpenApply(row)}>Aplicar</button>
+                    <button className="btn-action" onClick={() => handleOpenRedeem(row)}>Resgatar</button>
+                  </>
+                )}
+                <button className="btn-delete" onClick={() => handleDelete(row)}>Excluir</button>
+              </div>
+            ),
+          },
         ]}
-        onAction={handleOpenRedeem}
-        actionLabel="Resgatar"
-        onDelete={handleDelete}
       />
 
       {/* Create Modal */}
@@ -141,6 +181,15 @@ function InvestmentsPage() {
             <label htmlFor="inv_application_date">Data da Aplicacao</label>
             <input id="inv_application_date" name="application_date" type="date" value={formData.application_date || ''} onChange={handleChange} required />
           </div>
+          <div className="form-group">
+            <label htmlFor="inv_bank_account_id">Conta Vinculada</label>
+            <select id="inv_bank_account_id" name="bank_account_id" value={formData.bank_account_id || ''} onChange={handleChange}>
+              <option value="">Nenhuma</option>
+              {bankAccounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name} (R$ {a.balance.toFixed(2)})</option>
+              ))}
+            </select>
+          </div>
           <div className="form-actions">
             <button type="button" className="btn-secondary" onClick={() => { setShowCreateModal(false); setFormData({}); }}>Cancelar</button>
             <button type="submit" className="btn-primary">Cadastrar Investimento</button>
@@ -149,24 +198,48 @@ function InvestmentsPage() {
       </Modal>
 
       {/* Redeem Modal */}
-      <Modal isOpen={showRedeemModal} onClose={() => { setShowRedeemModal(false); setRedeemingInvestment(null); }} title={`Resgatar - ${redeemingInvestment?.type} ${redeemingInvestment?.institution || ''}`}>
+      <Modal isOpen={showRedeemModal} onClose={() => { setShowRedeemModal(false); setSelectedInvestment(null); }} title={`Resgatar - ${selectedInvestment?.type} ${selectedInvestment?.institution || ''}`}>
         <div className="redeem-form">
-          <p>Valor atual: R$ {redeemingInvestment?.current_value?.toFixed(2)}</p>
+          <p>Valor atual: R$ {selectedInvestment?.current_value?.toFixed(2)}</p>
+          <p>Conta vinculada: {selectedInvestment?.bank_name || '-'}</p>
           <div className="form-group">
             <label htmlFor="redeem_amount">Valor do Resgate (R$)</label>
             <input
               id="redeem_amount"
               type="number"
-              value={redeemAmount}
-              onChange={(e) => setRedeemAmount(e.target.value)}
+              value={operationAmount}
+              onChange={(e) => setOperationAmount(e.target.value)}
               step="0.01"
               min="0.01"
-              max={redeemingInvestment?.current_value}
+              max={selectedInvestment?.current_value}
             />
           </div>
           <div className="form-actions">
-            <button className="btn-secondary" onClick={() => { setShowRedeemModal(false); setRedeemingInvestment(null); }}>Cancelar</button>
+            <button className="btn-secondary" onClick={() => { setShowRedeemModal(false); setSelectedInvestment(null); }}>Cancelar</button>
             <button className="btn-primary" onClick={handleRedeem}>Confirmar Resgate</button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Apply Modal */}
+      <Modal isOpen={showApplyModal} onClose={() => { setShowApplyModal(false); setSelectedInvestment(null); }} title={`Aplicar - ${selectedInvestment?.type} ${selectedInvestment?.institution || ''}`}>
+        <div className="redeem-form">
+          <p>Valor atual: R$ {selectedInvestment?.current_value?.toFixed(2)}</p>
+          <p>Conta vinculada: {selectedInvestment?.bank_name || '-'}</p>
+          <div className="form-group">
+            <label htmlFor="apply_amount">Valor a Aplicar (R$)</label>
+            <input
+              id="apply_amount"
+              type="number"
+              value={operationAmount}
+              onChange={(e) => setOperationAmount(e.target.value)}
+              step="0.01"
+              min="0.01"
+            />
+          </div>
+          <div className="form-actions">
+            <button className="btn-secondary" onClick={() => { setShowApplyModal(false); setSelectedInvestment(null); }}>Cancelar</button>
+            <button className="btn-primary" onClick={handleApply}>Confirmar Aplicacao</button>
           </div>
         </div>
       </Modal>

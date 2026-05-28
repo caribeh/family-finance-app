@@ -11,6 +11,8 @@ function BankAccountsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [formData, setFormData] = useState({});
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferData, setTransferData] = useState({ source_account_id: '', target_account_id: '', amount: '', date: new Date().toISOString().split('T')[0], description: '' });
 
   useEffect(() => {
     loadAccounts();
@@ -66,13 +68,42 @@ function BankAccountsPage() {
     }
   };
 
+  const handleTransferChange = (e) => {
+    const { name, value } = e.target;
+    setTransferData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTransferSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await bankAccountsApi.transfer({
+        source_account_id: transferData.source_account_id,
+        target_account_id: transferData.target_account_id,
+        amount: parseFloat(transferData.amount),
+        date: transferData.date,
+        description: transferData.description,
+      });
+      addToast('Transferencia realizada!');
+      setShowTransfer(false);
+      setTransferData({ source_account_id: '', target_account_id: '', amount: '', date: new Date().toISOString().split('T')[0], description: '' });
+      loadAccounts();
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Erro ao transferir', 'error');
+    }
+  };
+
   return (
     <div className="bank-accounts-page">
       <div className="section-header">
         <h1>Contas Correntes</h1>
-        <button className="btn-primary" onClick={() => handleOpenModal()}>
-          Nova Conta
-        </button>
+        <div className="action-buttons">
+          <button className="btn-primary" onClick={() => handleOpenModal()}>
+            Nova Conta
+          </button>
+          <button className="btn-success" onClick={() => setShowTransfer(true)} disabled={accounts.length < 2}>
+            Transferir
+          </button>
+        </div>
       </div>
 
       <div className="summary-grid">
@@ -99,6 +130,41 @@ function BankAccountsPage() {
         onEdit={(row) => handleOpenModal(row)}
         onDelete={handleDelete}
       />
+
+      <Modal isOpen={showTransfer} onClose={() => setShowTransfer(false)} title="Transferir entre Contas">
+        <form className="transaction-form" onSubmit={handleTransferSubmit}>
+          <div className="form-group">
+            <label htmlFor="source_account_id">Conta Origem</label>
+            <select id="source_account_id" name="source_account_id" value={transferData.source_account_id} onChange={handleTransferChange} required>
+              <option value="">Selecione...</option>
+              {accounts.map((a) => <option key={a.id} value={a.id}>{a.name} ({formatCurrency(a.balance)})</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="target_account_id">Conta Destino</label>
+            <select id="target_account_id" name="target_account_id" value={transferData.target_account_id} onChange={handleTransferChange} required>
+              <option value="">Selecione...</option>
+              {accounts.map((a) => <option key={a.id} value={a.id}>{a.name} ({formatCurrency(a.balance)})</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="amount">Valor</label>
+            <input id="amount" name="amount" type="number" step="0.01" min="0.01" value={transferData.amount} onChange={handleTransferChange} required placeholder="0.00" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="date">Data</label>
+            <input id="date" name="date" type="date" value={transferData.date} onChange={handleTransferChange} required />
+          </div>
+          <div className="form-group">
+            <label htmlFor="description">Descricao (opcional)</label>
+            <input id="description" name="description" type="text" value={transferData.description} onChange={handleTransferChange} placeholder="Motivo da transferencia" />
+          </div>
+          <div className="form-actions">
+            <button type="button" className="btn-secondary" onClick={() => setShowTransfer(false)}>Cancelar</button>
+            <button type="submit" className="btn-primary">Transferir</button>
+          </div>
+        </form>
+      </Modal>
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingAccount(null); }} title={editingAccount ? 'Editar Conta' : 'Nova Conta'}>
         <form className="transaction-form" onSubmit={handleSubmit}>

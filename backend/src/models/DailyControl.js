@@ -57,7 +57,8 @@ const DailyControl = {
        FROM daily_control
        WHERE member_id = $1
          AND type = 'debit'
-         AND payment_method NOT IN ('meal_voucher', 'credit_card', 'benefit_card')
+         AND payment_method NOT IN ('meal_voucher', 'credit_card', 'benefit_card', 'transfer')
+         AND (source IS NULL OR source NOT IN ('investment'))
          AND category NOT IN ('Divida', 'Emprestimo', 'Contas', 'Investimento')
          AND date >= $2
          AND date <= $3`,
