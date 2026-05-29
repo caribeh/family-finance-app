@@ -335,6 +335,7 @@ function DailyControlPage() {
           <div className="form-group">
             <label htmlFor="debit_payment_method">Forma de Pagamento</label>
             <select id="debit_payment_method" name="payment_method" value={debitFormData.payment_method || ''} onChange={handleDebitChange} required>
+              <option value="">Selecione a forma de pagamento...</option>
               <option value="pix">PIX</option>
               <option value="credit_card">Cartao de Credito</option>
               <option value="benefit_card">Cartao de Beneficio</option>
