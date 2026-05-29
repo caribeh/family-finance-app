@@ -42,7 +42,7 @@ services:
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
       EMAIL_FROM: ${EMAIL_FROM}
-      TELEGRAM_BOT_TOKEN: '8963927687:AAFHrGAIAerfEhQWKmFfFqMr4bV10WEmnvw'
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
 
     volumes:
       - ./backend/src:/app/src
