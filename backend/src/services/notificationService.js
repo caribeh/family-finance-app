@@ -45,28 +45,35 @@ async function sendTelegram(message, chatId) {
 
   try {
     const ids = chatId.split(',').map((s) => s.trim()).filter(Boolean);
+    console.log(`Sending Telegram to ${ids.length} chat ID(s): ${ids.join(', ')}`);
     let allOk = true;
 
     for (const id of ids) {
-      const url = `https://api.telegram.org/bot${token}/sendMessage`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: id,
-          text: message,
-          parse_mode: 'HTML',
-        }),
-      });
+      try {
+        const url = `https://api.telegram.org/bot${token}/sendMessage`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: id,
+            text: message,
+            parse_mode: 'HTML',
+          }),
+        });
 
-      if (!response.ok) {
-        const err = await response.text();
-        console.error(`Telegram API error for chat ${id}:`, err);
+        if (!response.ok) {
+          const err = await response.text();
+          console.error(`Telegram API error for chat ${id}:`, err);
+          allOk = false;
+        } else {
+          console.log(`Telegram sent to chat ${id}`);
+        }
+      } catch (innerErr) {
+        console.error(`Telegram request failed for chat ${id}:`, innerErr.message);
         allOk = false;
       }
     }
 
-    if (allOk) console.log('Telegram message sent');
     return allOk;
   } catch (err) {
     console.error('Failed to send Telegram:', err.message);

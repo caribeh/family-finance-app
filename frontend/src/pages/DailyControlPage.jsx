@@ -164,7 +164,7 @@ function DailyControlPage() {
           <button className="btn-success" onClick={() => { setCreditFormData({ date: today }); setShowCreditModal(true); }}>
             + Entrada
           </button>
-          <button className="btn-danger" onClick={() => { setDebitFormData({ date: today, payment_method: 'cash' }); setShowDebitModal(true); }}>
+          <button className="btn-danger" onClick={() => { setDebitFormData({ date: today, payment_method: '' }); setShowDebitModal(true); }}>
             + Saida
           </button>
           <button className="btn-benefit" onClick={() => { setBenefitFormData({ date: today }); setShowBenefitModal(true); }}>
@@ -334,7 +334,7 @@ function DailyControlPage() {
           </div>
           <div className="form-group">
             <label htmlFor="debit_payment_method">Forma de Pagamento</label>
-            <select id="debit_payment_method" name="payment_method" value={debitFormData.payment_method || 'pix'} onChange={handleDebitChange} required>
+            <select id="debit_payment_method" name="payment_method" value={debitFormData.payment_method || ''} onChange={handleDebitChange} required>
               <option value="pix">PIX</option>
               <option value="credit_card">Cartao de Credito</option>
               <option value="benefit_card">Cartao de Beneficio</option>
