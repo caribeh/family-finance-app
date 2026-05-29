@@ -9,7 +9,7 @@ const ReminderConfig = {
     return result.rows[0];
   },
 
-  async upsert(workspaceId, { emailRecipient, telegramBotToken, telegramChatId }) {
+  async upsert(workspaceId, { emailRecipient, telegramChatId }) {
     const existing = await this.findByWorkspaceId(workspaceId);
     if (existing) {
       const fields = [];
@@ -18,10 +18,6 @@ const ReminderConfig = {
       if (emailRecipient !== undefined) {
         fields.push(`email_recipient = $${idx++}`);
         values.push(emailRecipient);
-      }
-      if (telegramBotToken !== undefined) {
-        fields.push(`telegram_bot_token = $${idx++}`);
-        values.push(telegramBotToken);
       }
       if (telegramChatId !== undefined) {
         fields.push(`telegram_chat_id = $${idx++}`);
@@ -36,9 +32,9 @@ const ReminderConfig = {
       return result.rows[0];
     }
     const result = await pool.query(
-      `INSERT INTO reminder_config (workspace_id, email_recipient, telegram_bot_token, telegram_chat_id)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [workspaceId, emailRecipient || null, telegramBotToken || null, telegramChatId || null]
+      `INSERT INTO reminder_config (workspace_id, email_recipient, telegram_chat_id)
+       VALUES ($1, $2, $3) RETURNING *`,
+      [workspaceId, emailRecipient || null, telegramChatId || null]
     );
     return result.rows[0];
   },

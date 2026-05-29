@@ -35,35 +35,39 @@ async function sendEmail(to, subject, text) {
   }
 }
 
-async function sendTelegram(message, botToken, chatId) {
-  const token = botToken || process.env.TELEGRAM_BOT_TOKEN;
-  const id = chatId || process.env.TELEGRAM_CHAT_ID;
+async function sendTelegram(message, chatId) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
 
-  if (!token || !id) {
+  if (!token || !chatId) {
     console.log('Telegram not configured.');
     return false;
   }
 
   try {
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: id,
-        text: message,
-        parse_mode: 'HTML',
-      }),
-    });
+    const ids = chatId.split(',').map((s) => s.trim()).filter(Boolean);
+    let allOk = true;
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('Telegram API error:', err);
-      return false;
+    for (const id of ids) {
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: id,
+          text: message,
+          parse_mode: 'HTML',
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        console.error(`Telegram API error for chat ${id}:`, err);
+        allOk = false;
+      }
     }
 
-    console.log('Telegram message sent');
-    return true;
+    if (allOk) console.log('Telegram message sent');
+    return allOk;
   } catch (err) {
     console.error('Failed to send Telegram:', err.message);
     return false;
@@ -74,7 +78,7 @@ async function sendBillReminder(reminder, userEmail, userName, config) {
   const today = new Date();
   const dateStr = today.toLocaleDateString('pt-BR');
   const subject = `Lembrete: ${reminder.name} vence hoje!`;
-  const text = `Olá ${userName},\n\nLembrete de conta a pagar:\n\n${reminder.name} - vence hoje (dia ${reminder.due_day})\n\nData: ${dateStr}\n\nAtenciosamente,\nFamily Finance`;
+  const text = `Ola ${userName},\n\nLembrete de conta a pagar:\n\n${reminder.name} - vence hoje (dia ${reminder.due_day})\n\nData: ${dateStr}\n\nAtenciosamente,\nFamily Finance`;
   const telegramMessage = `<b>${subject}</b>\n\nConta: ${reminder.name}\nVencimento: dia ${reminder.due_day}\nData: ${dateStr}`;
 
   let sentEmail = false;
@@ -85,16 +89,16 @@ async function sendBillReminder(reminder, userEmail, userName, config) {
     sentEmail = await sendEmail(emailTo, subject, text);
   }
 
-  if (config?.telegram_bot_token || process.env.TELEGRAM_BOT_TOKEN) {
-    sentTelegram = await sendTelegram(telegramMessage, config?.telegram_bot_token, config?.telegram_chat_id);
+  if (process.env.TELEGRAM_BOT_TOKEN && config?.telegram_chat_id) {
+    sentTelegram = await sendTelegram(telegramMessage, config.telegram_chat_id);
   }
 
   return { sentEmail, sentTelegram };
 }
 
-async function sendTestNotification(emailRecipient, telegramBotToken, telegramChatId, userName) {
+async function sendTestNotification(emailRecipient, telegramChatId, userName) {
   const subject = 'Teste de notificacao - Family Finance';
-  const text = `Olá ${userName},\n\nEsta é uma mensagem de teste do Family Finance.\nSe você recebeu este e-mail, as notificações estão configuradas corretamente!\n\nAtenciosamente,\nFamily Finance`;
+  const text = `Ola ${userName},\n\nEsta e uma mensagem de teste do Family Finance.\nSe voce recebeu este e-mail, as notificacoes estao configuradas corretamente!\n\nAtenciosamente,\nFamily Finance`;
   const telegramMessage = `<b>${subject}</b>\n\n${text}`;
 
   let sentEmail = false;
@@ -104,8 +108,8 @@ async function sendTestNotification(emailRecipient, telegramBotToken, telegramCh
     sentEmail = await sendEmail(emailRecipient, subject, text);
   }
 
-  if (telegramBotToken && telegramChatId) {
-    sentTelegram = await sendTelegram(telegramMessage, telegramBotToken, telegramChatId);
+  if (telegramChatId && process.env.TELEGRAM_BOT_TOKEN) {
+    sentTelegram = await sendTelegram(telegramMessage, telegramChatId);
   }
 
   return { sentEmail, sentTelegram };

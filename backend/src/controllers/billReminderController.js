@@ -54,11 +54,10 @@ const billReminderController = {
   getConfig: async (req, res) => {
     const config = await ReminderConfig.findByWorkspaceId(req.workspaceId);
     if (!config) {
-      return res.json({ email_recipient: '', telegram_bot_token: '', telegram_chat_id: '' });
+      return res.json({ email_recipient: '', telegram_chat_id: '' });
     }
     res.json({
       email_recipient: config.email_recipient || '',
-      telegram_bot_token: config.telegram_bot_token || '',
       telegram_chat_id: config.telegram_chat_id || '',
     });
   },
@@ -73,19 +72,16 @@ const billReminderController = {
       }
       return true;
     }),
-    body('telegram_bot_token').optional({ values: 'falsy' }).isString(),
     body('telegram_chat_id').optional({ values: 'falsy' }).isString(),
     validate,
     async (req, res) => {
-      const { email_recipient, telegram_bot_token, telegram_chat_id } = req.body;
+      const { email_recipient, telegram_chat_id } = req.body;
       const config = await ReminderConfig.upsert(req.workspaceId, {
         emailRecipient: email_recipient || null,
-        telegramBotToken: telegram_bot_token || null,
         telegramChatId: telegram_chat_id || null,
       });
       res.json({
         email_recipient: config.email_recipient || '',
-        telegram_bot_token: config.telegram_bot_token || '',
         telegram_chat_id: config.telegram_chat_id || '',
       });
     },
@@ -97,14 +93,14 @@ const billReminderController = {
 
     const config = await ReminderConfig.findByWorkspaceId(req.workspaceId);
     const emailRecipient = config?.email_recipient || user.email;
-    const telegramBotToken = config?.telegram_bot_token;
     const telegramChatId = config?.telegram_chat_id;
+    const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 
     if (!emailRecipient && !(telegramBotToken && telegramChatId)) {
       return res.status(400).json({ error: 'Configure email or Telegram before testing.' });
     }
 
-    const result = await sendTestNotification(emailRecipient, telegramBotToken, telegramChatId, user.name);
+    const result = await sendTestNotification(emailRecipient, telegramChatId, user.name);
     res.json(result);
   },
 };

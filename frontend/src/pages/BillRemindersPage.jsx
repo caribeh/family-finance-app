@@ -10,7 +10,7 @@ function BillRemindersPage() {
   const [reminders, setReminders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [config, setConfig] = useState({ email_recipient: '', telegram_bot_token: '', telegram_chat_id: '' });
+  const [config, setConfig] = useState({ email_recipient: '', telegram_chat_id: '' });
   const [testing, setTesting] = useState(false);
 
   useEffect(() => {
@@ -68,7 +68,6 @@ function BillRemindersPage() {
     try {
       await billRemindersApi.saveConfig({
         email_recipient: config.email_recipient || null,
-        telegram_bot_token: config.telegram_bot_token || null,
         telegram_chat_id: config.telegram_chat_id || null,
       });
       addToast('Configuracao salva!');
@@ -132,23 +131,14 @@ function BillRemindersPage() {
         </div>
 
         <div className="form-group">
-          <label>Token do Bot do Telegram</label>
-          <input
-            type="text"
-            placeholder="123456:ABC-DEF1234..."
-            value={config.telegram_bot_token}
-            onChange={(e) => setConfig({ ...config, telegram_bot_token: e.target.value })}
-          />
-        </div>
-
-        <div className="form-group">
           <label>Chat ID do Telegram</label>
           <input
             type="text"
-            placeholder="-123456789"
+            placeholder="-123456789, -987654321"
             value={config.telegram_chat_id}
             onChange={(e) => setConfig({ ...config, telegram_chat_id: e.target.value })}
           />
+          <small className="text-muted">Separe varios IDs por virgula</small>
         </div>
 
         <div className="form-actions" style={{ justifyContent: 'flex-start' }}>
